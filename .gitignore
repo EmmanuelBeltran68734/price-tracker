@@ -1,0 +1,21 @@
+# Entorno virtual de Python (se recrea con uv; pesa mucho)
+.venv/
+
+# Archivos compilados de Python (se generan solos)
+__pycache__/
+*.pyc
+
+# Caches de herramientas
+.pytest_cache/
+.ruff_cache/
+
+# Secretos: contraseñas, tokens de Telegram, claves JWT. ¡NUNCA a GitHub!
+.env
+
+# Dependencias del frontend (semana 4)
+node_modules/
+
+# Archivos del sistema / editor
+.DS_Store
+Thumbs.db
+.vscode/
