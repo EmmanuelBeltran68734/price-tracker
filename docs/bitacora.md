@@ -33,3 +33,26 @@ Registro de decisiones, problemas y soluciones. Me sirve para el README y para c
 - La diferencia entre Git (historial local) y GitHub (copia en la nube).
 - Qué es un entorno virtual y por qué `uv.lock` sí se sube pero `.venv` no.
 - Qué es CI y cómo `Closes #N` conecta un PR con un Issue.
+
+
+---
+
+## Semana 1 — Crawler (Issue #3)
+
+### Revisión de robots.txt (30 oct 2026)
+| Tienda | Páginas de producto | Rutas prohibidas relevantes | Crawl-delay | Notas |
+|---|---|---|---|---|
+| Alkosto | ✅ Permitidas (`/p/`) | búsquedas (`?q=`, `/search/`), carrito, checkout, cuenta | No tiene | Tiene `sitemap-productos.xml` |
+| Éxito | ✅ Permitidas (`/p`) | `/api/`, búsqueda (`/s?`), checkout, cuenta, facetas | No tiene | Cloudflare: `search=yes, ai-train=no` |
+
+**Decisiones:**
+- Solo visito páginas de producto que el usuario registra; nunca búsquedas, carrito ni APIs internas.
+- Espero entre 2 y 5 segundos entre peticiones e identifico mi bot con un User-Agent propio.
+- En Éxito, los `Disallow` quedaron técnicamente bajo `User-agent: Applebot-Extended`, pero respeto su intención y los aplico a mi bot.
+- Si una tienda bloquea el bot (por ejemplo, con un desafío de Cloudflare), no intento saltarme la protección: la descarto.
+
+### Exploración con httpx (30 oct 2026)
+- **Alkosto** respondió 200. Su JSON-LD solo trae `BreadcrumbList`; el precio está en **microdata** (`<meta itemprop="price" content="2999000.0">`).
+-**Éxito** respondio 404 con un producto de marketplace (`-mp`) que ya no existía. Con un producto vendido por Éxito respondio 200 y su **JSON-LD** trae `@type: Product` con `offers.price = 3299900`.
+-**Aprendizaje:** explorar antes de programar. Asumí que todas las tiendas usaban JSON-LD y no era así -> el extractor soportará JSON-LD **y** microdata (patrón Strategy).
+- No fue necesario cambiar el User-Agent: el bot se identifica honestamente y ambas tiendas responden.
