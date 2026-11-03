@@ -56,3 +56,4 @@ Registro de decisiones, problemas y soluciones. Me sirve para el README y para c
 -**Éxito** respondio 404 con un producto de marketplace (`-mp`) que ya no existía. Con un producto vendido por Éxito respondio 200 y su **JSON-LD** trae `@type: Product` con `offers.price = 3299900`.
 -**Aprendizaje:** explorar antes de programar. Asumí que todas las tiendas usaban JSON-LD y no era así -> el extractor soportará JSON-LD **y** microdata (patrón Strategy).
 - No fue necesario cambiar el User-Agent: el bot se identifica honestamente y ambas tiendas responden.
+- `normalizar_precio` rechaza precios ≤ 0: un $0 (producto agotado) generaría alertas falsas. "1.500" se interpreta como mil quinientos (correcto en COP).

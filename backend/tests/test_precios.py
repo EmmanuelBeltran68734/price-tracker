@@ -25,7 +25,7 @@ def test_normalizar_precio_devuelve_decimal():
     assert isinstance(normalizar_precio("$ 1.000"), Decimal)
 
 
-@pytest.mark.parametrize("entrada", ["", "   ", "Agotado", "$"])
+@pytest.mark.parametrize("entrada", ["", "   ", "Agotado", "$", "-5.000", "$ 0", 0, -100])
 def test_normalizar_precio_rechaza_valores_invalidos(entrada):
     with pytest.raises(ValueError):
         normalizar_precio(entrada)

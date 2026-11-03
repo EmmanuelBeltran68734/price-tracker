@@ -12,11 +12,13 @@ def normalizar_precio(valor: str | int | float | Decimal) -> Decimal:
         numero = Decimal(str(valor))
     else:
         numero = _texto_a_decimal(valor)
+    if numero <= 0:
+        raise ValueError(f"El precio debe ser mayor que cero: {valor!r}")
     return numero.quantize(CENTAVOS)
 
 
 def _texto_a_decimal(texto: str) -> Decimal:
-    limpio = re.sub(r"[^\d.,]", "", texto)
+    limpio = re.sub(r"[^\d.,-]", "", texto)
     if not re.search(r"\d", limpio):
         raise ValueError(f"No se encontró un precio en: {texto!r}")
     limpio = _quitar_separadores_de_miles(limpio)
