@@ -2,6 +2,7 @@
 
 import json
 from abc import ABC, abstractmethod
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup, Tag
 
@@ -130,3 +131,25 @@ def _limpiar_url(url: str | None) -> str | None:
     if not url:
         return None
     return url[url.rfind("https://") :]
+
+
+# --- Elegir la estrategia según la tienda ----------------------------------
+
+
+class TiendaNoSoportadaError(Exception):
+    """La URL es de una tienda que todavía no sabemos leer."""
+
+
+EXTRACTORES_POR_DOMINIO: dict[str, Extractor] = {
+    "exito.com": JsonLdExtractor(),
+    "alkosto.com": MicrodataExtractor(),
+}
+
+
+def elegir_extractor(url: str) -> Extractor:
+    """Devuelve la estrategia de extracción que corresponde a la tienda de la URL."""
+    dominio = urlparse(url).netloc.lower().removeprefix("www.")
+    extractor = EXTRACTORES_POR_DOMINIO.get(dominio)
+    if extractor is None:
+        raise TiendaNoSoportadaError(f"Tienda no soportada: {dominio or url!r}")
+    return extractor
