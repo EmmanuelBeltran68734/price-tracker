@@ -53,7 +53,28 @@ Registro de decisiones, problemas y soluciones. Me sirve para el README y para c
 
 ### Exploración con httpx (30 oct 2026)
 - **Alkosto** respondió 200. Su JSON-LD solo trae `BreadcrumbList`; el precio está en **microdata** (`<meta itemprop="price" content="2999000.0">`).
--**Éxito** respondio 404 con un producto de marketplace (`-mp`) que ya no existía. Con un producto vendido por Éxito respondio 200 y su **JSON-LD** trae `@type: Product` con `offers.price = 3299900`.
--**Aprendizaje:** explorar antes de programar. Asumí que todas las tiendas usaban JSON-LD y no era así -> el extractor soportará JSON-LD **y** microdata (patrón Strategy).
+- **Éxito** respondio 404 con un producto de marketplace (`-mp`) que ya no existía. Con un producto vendido por Éxito respondio 200 y su **JSON-LD** trae `@type: Product` con `offers.price = 3299900`.
+- **Aprendizaje:** explorar antes de programar. Asumí que todas las tiendas usaban JSON-LD y no era así -> el extractor soportará JSON-LD **y** microdata (patrón Strategy).
 - No fue necesario cambiar el User-Agent: el bot se identifica honestamente y ambas tiendas responden.
 - `normalizar_precio` rechaza precios ≤ 0: un $0 (producto agotado) generaría alertas falsas. "1.500" se interpreta como mil quinientos (correcto en COP).
+
+
+### Extractores con patrón Strategy (31 oct – 10 nov 2026)
+- Clase base abstracta `Extractor` con un solo método: `extraer(html) -> ProductoExtraido`.
+- `JsonLdExtractor` (Éxito) y `MicrodataExtractor` (Alkosto) cumplen ese mismo molde.
+- `elegir_extractor(url)` escoge la estrategia según el dominio con un diccionario: agregar una tienda nueva es **una línea**.
+
+**Trampas que encontré en el HTML de Alkosto:**
+1. **Dos `itemprop="name"`:** el del producto y el de la marca ("PLAYSTATION"), que está anidado. → Solo tomo propiedades cuyo `itemscope` más cercano es el producto.
+2. **URL de imagen duplicada:** `https://www.alkosto.comhttps://cdn...` (error de la tienda). → Me quedo con la parte desde el último `https://`.
+
+**Decisiones:**
+| Decisión | Por qué |
+|---|---|
+| Comparar el dominio **exacto** (`exito.com`), no `"exito.com" in url` | `exito.com.falso.co` contiene el texto pero es otro sitio (seguridad). |
+| Precio como `Decimal`, nunca `float` | `float` tiene errores de redondeo con dinero. |
+| Tests con **fixtures** (páginas guardadas en `tests/fixtures/`) | Funcionan sin internet, dan siempre el mismo resultado y no hacen peticiones a las tiendas en cada push. |
+
+**Problemas:**
+- `test_extractores.py` vacío (0 bytes) → no lo había guardado.
+- `No module named 'app'` → corrí pytest desde la raíz y no desde `backend/`, donde está `pyproject.toml`.
