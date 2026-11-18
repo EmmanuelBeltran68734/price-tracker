@@ -78,3 +78,27 @@ Registro de decisiones, problemas y soluciones. Me sirve para el README y para c
 **Problemas:**
 - `test_extractores.py` vacío (0 bytes) → no lo había guardado.
 - `No module named 'app'` → corrí pytest desde la raíz y no desde `backend/`, donde está `pyproject.toml`.
+
+### Base de datos (11 – 17 nov 2026)
+- Configuración con **pydantic-settings**: `DATABASE_URL` se lee del `.env`, nunca va escrita en el código.
+- 4 tablas con **SQLAlchemy**: `tiendas`, `productos`, `historial_precios` y `ejecuciones_crawler`.
+- **Alembic** para las migraciones ("Git para la base de datos"), con hooks que pasan ruff a cada migración generada.
+- `normalizar_url` (sin `?utm_...` ni `#`) + URL única → el mismo producto nunca se guarda dos veces.
+- `guardar_precio` con el patrón **obtener o crear** y **unidad de trabajo** (un solo `commit` al final).
+
+**Problemas y cómo los resolví:**
+1. **Contraseña real en `.env.example`** (archivo público en GitHub). → La cambié por `cambia_esta_clave` y **cambié la contraseña** de la base de datos: borrarla del archivo no basta, porque queda en el historial de Git.
+2. **"la autentificación password falló" en español:** había **dos Postgres** en el puerto 5432 (uno instalado en Windows y el de Docker). → Moví el de Docker al **5433**. La pista fue el idioma: el de Docker responde en inglés.
+3. **Docker seguía usando la contraseña vieja:** VS Code cargaba el `.env` viejo en la terminal (`python.terminal.useEnvFile`) y una variable de la terminal **le gana** al archivo `.env`. → Desactivé la opción y recargué VS Code.
+4. **`postgressql`** (doble s) en la URL. → Se escribe `postgresql`.
+
+### Crawler en vivo (18 nov 2026)
+- `descargar` reintenta solo errores **temporales** (429, 5xx, red) con **espera exponencial** (2 s, 4 s); un 404 o 403 no se reintenta.
+- Tests sin internet ni esperas reales gracias a `httpx.MockTransport` y un reloj falso (**inyección de dependencias**).
+- El crawler guarda cada ejecución en `ejecuciones_crawler`; si un producto falla, lo anota y sigue con los demás.
+- **Primera ejecución real:** Alkosto respondió 200 ✅. **Éxito respondió 403 (Prohibido)**: ahora bloquea al bot.
+  → **Decisión:** respeto el bloqueo. No me hago pasar por un navegador ni evado su protección. Conservo el extractor JSON-LD y sus tests; la segunda fuente en vivo será **Mercado Libre por su API oficial** (Semana 3).
+
+### Resumen de la Semana 1
+- **56 tests** en verde, sin depender de internet ni de Postgres (fixtures + SQLite en memoria).
+- **Aprendizajes:** TDD (rojo → verde → refactor), patrón Strategy, `Decimal` para dinero, migraciones, logs con niveles y que un buen crawler sabe **cuándo no insistir**.
