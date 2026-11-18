@@ -1,0 +1,43 @@
+"""Alembic: conecta con la base de datos y compara los modelos con las tablas."""
+
+from logging.config import fileConfig
+
+from sqlalchemy import create_engine, pool
+
+from alembic import context
+from app.core.config import settings
+from app.models import Base
+
+config = context.config
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+# Los modelos que Alembic compara con la base de datos para generar migraciones
+target_metadata = Base.metadata
+
+
+def run_migrations_offline() -> None:
+    """Genera el SQL de las migraciones sin conectarse a la base de datos."""
+    context.configure(
+        url=settings.database_url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
+    """Se conecta a la base de datos y aplica las migraciones."""
+    engine = create_engine(settings.database_url, poolclass=pool.NullPool)
+    with engine.connect() as conexion:
+        context.configure(connection=conexion, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()

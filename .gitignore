@@ -19,3 +19,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+
+
+# HTML descargados por el script de exploración
+backend/scripts/salida/

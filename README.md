@@ -4,7 +4,22 @@ Plataforma que vigila precios de productos en tiendas en línea de Colombia, gua
 
 ## Estado
 
-🚧 En construcción - Semana 0 (preparación del entorno).
+- ✅ **Semana 1:** crawler (Alkosto en vivo; Éxito por JSON-LD), PostgreSQL, migraciones y 56 tests.
+- 🚧 **Semana 2:** API con FastAPI y autenticación JWT.
+
+## Cómo ejecutarlo (local)
+
+Requisitos: [Docker Desktop](https://www.docker.com/products/docker-desktop/) y [uv](https://docs.astral.sh/uv/).
+
+1. Copia `.env.example` como `.env` y cambia la contraseña.
+2. Levanta la base de datos: `docker compose up -d db`
+3. Desde la carpeta `backend`:
+   ```bash
+   uv sync
+   uv run alembic upgrade head
+   uv run python -m scripts.guardar_precio_de_prueba   # registra 2 productos de ejemplo
+   uv run python -m scripts.ejecutar_crawler           # descarga los precios actuales
+   uv run pytest
 
 ## Stack planeado
 
