@@ -2,12 +2,12 @@
 
 import json
 from abc import ABC, abstractmethod
-from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup, Tag
 
 from app.crawler.modelos import ProductoExtraido
 from app.crawler.precios import normalizar_precio
+from app.crawler.urls import dominio_de
 
 ESTADOS_DISPONIBLES = {"InStock", "LimitedAvailability", "OnlineOnly", "PreOrder"}
 
@@ -148,7 +148,7 @@ EXTRACTORES_POR_DOMINIO: dict[str, Extractor] = {
 
 def elegir_extractor(url: str) -> Extractor:
     """Devuelve la estrategia de extracción que corresponde a la tienda de la URL."""
-    dominio = urlparse(url).netloc.lower().removeprefix("www.")
+    dominio = dominio_de(url)
     extractor = EXTRACTORES_POR_DOMINIO.get(dominio)
     if extractor is None:
         raise TiendaNoSoportadaError(f"Tienda no soportada: {dominio or url!r}")
